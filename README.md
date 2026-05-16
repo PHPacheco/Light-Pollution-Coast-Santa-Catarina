@@ -2,7 +2,7 @@
 Link do projeto do google clound já altorizado para o uso da API e coleta das imagens
 https://console.cloud.google.com/earth-engine/welcome?project=processamento-de-imagem-496515
 
-![BC](Imagem BC 15KM.png)
+![BC](<Imagem BC 15KM.png>)
 
 Link para visualizar a imagem nítida (PNG):
 https://earthengine.googleapis.com/v1/projects/processamento-de-imagem-496515/thumbnails/1a1ecfcba70a38746cdacfaa814c3882-092b939921dd32b2f4164f97cc95046d:getPixels
