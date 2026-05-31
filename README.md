@@ -4,8 +4,27 @@ https://console.cloud.google.com/earth-engine/welcome?project=processamento-de-i
 
 ![BC](<Imagem BC 15KM.png>)
 
-Link para visualizar a imagem nítida (PNG):
-https://earthengine.googleapis.com/v1/projects/processamento-de-imagem-496515/thumbnails/1a1ecfcba70a38746cdacfaa814c3882-092b939921dd32b2f4164f97cc95046d:getPixels
+##Impacto nos ecossistemas costeiros marinhos
 
-Link para baixar o arquivo original de alta resolução (ZIP/GeoTIFF):
-https://earthengine.googleapis.com/v1/projects/processamento-de-imagem-496515/thumbnails/17ae5f06e2d6b95b18b1464fec35a460-3e8b05baf8a8118fb2941d091d41e448:getPixels
+Corelacionar o desenvolvimento costeiro acelerado e a exposição dos ecossistemas marinhos à poluição luminosa noturna.
+Estudos mostram que até 76% da área do fundo marinho de estuários urbanizados pode estar exposta a níveis de luz biologicamente significativos, com impactos nocivo nos ecossistemas que fornecem serviços vitais.
+[Artigo](https://pmc.ncbi.nlm.nih.gov/articles/PMC7385152/)
+
+
+## Coordenadas
+
+Florianópolis
+Latitude: -27.5969
+Longitude: -48.5468
+
+Balneário Camboriú
+Latitude: -26.9980
+Longitude: -48.6326
+
+Itajaí
+Latitude: -26.9083
+Longitude: -48.6775
+
+
+## Opções de imagens fornecidas no Slide
+![OP](<Opções.png>)

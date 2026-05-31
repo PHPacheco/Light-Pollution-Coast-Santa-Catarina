@@ -19,46 +19,56 @@ def inicializar_earth_engine():
 def criar_imagem_cidade(cidade):
     lon = cidade['longitude']
     lat = cidade['latitude']
-    roi = ee.Geometry.Point([lon, lat]).buffer(cidade['buffer_m']).bounds()
-    region = roi.bounds().getInfo()
+    region_geom = ee.Geometry.Point([lon, lat]).buffer(cidade['buffer_m']).bounds()
+    region = region_geom.getInfo()
 
-    # Carregar e filtrar a colecao de imagens usando o ID completo correto.
     dataset = (
-        ee.ImageCollection('NASA/VIIRS/002/VNP46A2')
-        .filterBounds(roi)
+        ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+        .filterBounds(region_geom)
         .filterDate(DATA_INICIO, DATA_FIM)
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', MAX_NUVENS))
+        .select(['B2', 'B3', 'B4', 'B11'])
     )
 
-    # Selecionar a banda de radiancia noturna corrigida.
-    imagem_luzes = dataset.select('DNB_BRDF_Corrected_NTL')
+    imagem = dataset.median().clip(region_geom)
 
-    # Reduzir a colecao diaria para uma unica imagem, usando a mediana para limpar ruidos.
-    imagem_final = imagem_luzes.median().clip(roi)
+    # MNDWI: valores mais altos tendem a ser agua; valores baixos tendem a ser terra.
+    mndwi = imagem.normalizedDifference(['B3', 'B11']).rename('MNDWI')
 
-    # Parametros corrigidos para VISUALIZACAO em alta qualidade (PNG).
-    parametros_visao = {
+    parametros_rgb = {
+        'bands': ['B4', 'B3', 'B2'],
         'min': 0,
-        'max': 60,  # Mantido o max original que voce validou
-        'palette': ['black', 'blue', 'purple', 'yellow', 'white'],
+        'max': 3000,
         'region': region,
-        'dimensions': 1024,  # PNG com 1024px de largura
+        'dimensions': DIMENSOES_PNG,
+    }
+
+    parametros_mndwi = {
+        'min': -0.5,
+        'max': 0.5,
+        'palette': ['8c510a', 'f6e8c3', 'c7eae5', '01665e'],
+        'region': region,
+        'dimensions': DIMENSOES_PNG,
     }
 
     parametros_download = {
-        'name': f"{cidade['arquivo']}_viirs_luzes_noturnas",
-        'scale': 500,
+        'name': f"{cidade['arquivo']}_sentinel2_mndwi",
+        'scale': 30,
         'crs': 'EPSG:4326',
         'region': region['coordinates'],
     }
 
     return {
-        'visualizacao': imagem_final.getThumbURL(parametros_visao),
-        'download': imagem_final.getDownloadURL(parametros_download),
+        'rgb': imagem.getThumbURL(parametros_rgb),
+        'mndwi': mndwi.getThumbURL(parametros_mndwi),
+        'download': mndwi.getDownloadURL(parametros_download),
     }
 
 
 DATA_INICIO = '2026-01-01'
 DATA_FIM = '2026-01-31'
+MAX_NUVENS = 20
+DIMENSOES_PNG = 1024
 
 CIDADES = [
     {
@@ -92,5 +102,6 @@ for cidade in CIDADES:
 
     print(f"\n{cidade['nome']}")
     print(f"Coordenadas: {cidade['latitude']}, {cidade['longitude']}")
-    print(f"Imagem VIIRS de luzes noturnas (PNG):\n{urls['visualizacao']}\n")
-    print(f"Download VIIRS em alta resolucao (ZIP/GeoTIFF):\n{urls['download']}")
+    print(f"Imagem RGB Sentinel-2 (PNG):\n{urls['rgb']}\n")
+    print(f"Imagem MNDWI para distinguir agua/terra (PNG):\n{urls['mndwi']}\n")
+    print(f"Download MNDWI em alta resolucao (ZIP/GeoTIFF):\n{urls['download']}")
