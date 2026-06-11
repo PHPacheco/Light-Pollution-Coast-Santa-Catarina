@@ -1,6 +1,5 @@
 import ee
 
-# ID do seu projeto do Google Cloud
 PROJECT_ID = 'processamento-de-imagem-496515'
 
 
@@ -22,7 +21,6 @@ def criar_separacao_cidade(cidade):
     region_geom = ee.Geometry.Point([lon, lat]).buffer(cidade['buffer_m']).bounds()
     region = region_geom.getInfo()
 
-    # Passo 1: MNDWI via Sentinel-2 para distinguir agua e terra.
     s2 = (
         ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
         .filterBounds(region_geom)
@@ -34,10 +32,8 @@ def criar_separacao_cidade(cidade):
     )
     mndwi = s2.normalizedDifference(['B3', 'B11']).rename('MNDWI')
 
-    # Passo 2: mascara binaria de agua (MNDWI > limiar = agua).
     mascara_agua = mndwi.gt(LIMIAR_AGUA)
 
-    # Passo 3: VIIRS noturno reduzido pela mediana e limitado as areas de agua.
     viirs = (
         ee.ImageCollection('NASA/VIIRS/002/VNP46A2')
         .filterBounds(region_geom)
@@ -48,9 +44,6 @@ def criar_separacao_cidade(cidade):
     )
     viirs_agua = viirs.updateMask(mascara_agua)
 
-    # Passo 4: visualizacao do VIIRS sobre a agua com a terra em cinza solido.
-    # No artigo, a area de terra aparece como regiao solida cinza; aqui fazemos o
-    # mesmo, sobrepondo a luz noturna (apenas sobre agua) a um fundo cinza.
     fundo_cinza = ee.Image.constant(COR_TERRA).clip(region_geom)
     viirs_rgb = viirs_agua.visualize(
         min=0,
@@ -92,7 +85,7 @@ DATA_FIM = '2026-01-31'
 MAX_NUVENS = 20
 DIMENSOES_PNG = 1024
 LIMIAR_AGUA = 0.0  # MNDWI > 0 tende a ser agua (padrao da literatura)
-MAX_VIIRS = 60  # igual ao main.py
+MAX_VIIRS = 60
 COR_TERRA = [128, 128, 128]  # cinza solido para a terra, como no artigo
 
 CIDADES = [
