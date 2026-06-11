@@ -15,7 +15,7 @@ def inicializar_earth_engine():
         print("Google Earth Engine autenticado e inicializado com sucesso!")
 
 
-def criar_separacao_cidade(cidade):
+def construir_camadas(cidade):
     lon = cidade['longitude']
     lat = cidade['latitude']
     region_geom = ee.Geometry.Point([lon, lat]).buffer(cidade['buffer_m']).bounds()
@@ -43,6 +43,24 @@ def criar_separacao_cidade(cidade):
         .clip(region_geom)
     )
     viirs_agua = viirs.updateMask(mascara_agua)
+
+    return {
+        'region_geom': region_geom,
+        'region': region,
+        'mndwi': mndwi,
+        'mascara_agua': mascara_agua,
+        'viirs': viirs,
+        'viirs_agua': viirs_agua,
+    }
+
+
+def criar_separacao_cidade(cidade):
+    camadas = construir_camadas(cidade)
+    region = camadas['region']
+    region_geom = camadas['region_geom']
+    mndwi = camadas['mndwi']
+    mascara_agua = camadas['mascara_agua']
+    viirs_agua = camadas['viirs_agua']
 
     fundo_cinza = ee.Image.constant(COR_TERRA).clip(region_geom)
     viirs_rgb = viirs_agua.visualize(
@@ -84,9 +102,9 @@ DATA_INICIO = '2026-01-01'
 DATA_FIM = '2026-01-31'
 MAX_NUVENS = 20
 DIMENSOES_PNG = 1024
-LIMIAR_AGUA = 0.0  # MNDWI > 0 tende a ser agua (padrao da literatura)
+LIMIAR_AGUA = 0.0
 MAX_VIIRS = 60
-COR_TERRA = [128, 128, 128]  # cinza solido para a terra, como no artigo
+COR_TERRA = [128, 128, 128]
 
 CIDADES = [
     {
@@ -113,13 +131,14 @@ CIDADES = [
 ]
 
 
-inicializar_earth_engine()
+if __name__ == '__main__':
+    inicializar_earth_engine()
 
-for cidade in CIDADES:
-    urls = criar_separacao_cidade(cidade)
+    for cidade in CIDADES:
+        urls = criar_separacao_cidade(cidade)
 
-    print(f"\n{cidade['nome']}")
-    print(f"Coordenadas: {cidade['latitude']}, {cidade['longitude']}")
-    print(f"MNDWI continuo (PNG):\n{urls['mndwi']}\n")
-    print(f"Mascara binaria de agua (PNG):\n{urls['mascara']}\n")
-    print(f"VIIRS noturno apenas sobre agua (PNG):\n{urls['viirs_agua']}")
+        print(f"\n{cidade['nome']}")
+        print(f"Coordenadas: {cidade['latitude']}, {cidade['longitude']}")
+        print(f"MNDWI continuo (PNG):\n{urls['mndwi']}\n")
+        print(f"Mascara binaria de agua (PNG):\n{urls['mascara']}\n")
+        print(f"VIIRS noturno apenas sobre agua (PNG):\n{urls['viirs_agua']}")
