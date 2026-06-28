@@ -3,3 +3,5 @@ __pycache__/
 .codex_render*/
 ~$*.docx
 ~WRL*.tmp
+AGENTS.local.md
+.env

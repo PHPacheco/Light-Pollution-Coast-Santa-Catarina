@@ -1,0 +1,16 @@
+city_slug,group,sensitivity_weight,habitat_weight,notes
+florianopolis,zooplancton_copepodes,0.90,0.88,Baias e aguas costeiras rasas usadas como proxy inicial ate importacao OBIS
+florianopolis,invertebrados_bentonicos,0.85,0.86,Relacao direta com fundo marinho e habitats rasos
+florianopolis,peixes_costeiros,0.70,0.82,Grupo costeiro usado para densidade relativa de fauna
+florianopolis,tartarugas_marinhas,0.82,0.72,Camada de sensibilidade comportamental e costeira
+florianopolis,aves_marinhas,0.66,0.70,Sensibilidade a skyglow e areas costeiras
+balneario-camboriu,zooplancton_copepodes,0.90,0.72,Faixa costeira urbanizada e rio Camboriu como proxy de habitat sensivel
+balneario-camboriu,invertebrados_bentonicos,0.85,0.70,Relacao com fundo raso proximo a orla
+balneario-camboriu,peixes_costeiros,0.70,0.68,Ambiente costeiro e estuarino usado como proxy
+balneario-camboriu,tartarugas_marinhas,0.82,0.62,Sensibilidade costeira tratada como risco relativo
+balneario-camboriu,aves_marinhas,0.66,0.58,Sensibilidade a luz costeira e skyglow
+itajai,zooplancton_copepodes,0.90,0.68,Canal e foz do Itajai-Acu usados como proxy de zona sensivel
+itajai,invertebrados_bentonicos,0.85,0.66,Relacao com fundo raso e areas de canal/foz
+itajai,peixes_costeiros,0.70,0.72,Ambiente estuarino-portuario usado como proxy
+itajai,tartarugas_marinhas,0.82,0.55,Sensibilidade costeira tratada como risco relativo
+itajai,aves_marinhas,0.66,0.60,Sensibilidade a luz costeira e infraestrutura urbana

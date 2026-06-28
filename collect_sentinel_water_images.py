@@ -1,18 +1,18 @@
 import ee
 
-# ID do seu projeto do Google Cloud
-PROJECT_ID = 'processamento-de-imagem-496515'
+from earth_engine_config import obter_project_id
 
 
 def inicializar_earth_engine():
+    project_id = obter_project_id()
     try:
-        ee.Initialize(project=PROJECT_ID)
+        ee.Initialize(project=project_id)
         print("Google Earth Engine inicializado com sucesso!")
     except Exception as e:
         print(f"Nao foi possivel inicializar diretamente: {e}")
         print("Iniciando fluxo de autenticacao...")
         ee.Authenticate()
-        ee.Initialize(project=PROJECT_ID)
+        ee.Initialize(project=project_id)
         print("Google Earth Engine autenticado e inicializado com sucesso!")
 
 
