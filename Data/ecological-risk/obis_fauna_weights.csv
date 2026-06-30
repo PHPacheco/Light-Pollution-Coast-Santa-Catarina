@@ -1,0 +1,16 @@
+city_slug,group,sensitivity_weight,habitat_weight,notes
+florianopolis,zooplancton_copepodes,0.90,0.75,Fallback AquaMaps (OBIS=2 < 5 registros)
+florianopolis,invertebrados_bentonicos,0.85,0.42,OBIS: 41 ocorrencias na caixa da cidade
+florianopolis,peixes_costeiros,0.70,1.00,OBIS: 7791 ocorrencias na caixa da cidade
+florianopolis,tartarugas_marinhas,0.82,0.60,Fallback AquaMaps (OBIS=3 < 5 registros)
+florianopolis,aves_marinhas,0.66,0.62,Fallback AquaMaps (OBIS=0 < 5 registros)
+balneario-camboriu,zooplancton_copepodes,0.90,0.75,Fallback AquaMaps (OBIS=1 < 5 registros)
+balneario-camboriu,invertebrados_bentonicos,0.85,0.47,OBIS: 68 ocorrencias na caixa da cidade
+balneario-camboriu,peixes_costeiros,0.70,1.00,OBIS: 7839 ocorrencias na caixa da cidade
+balneario-camboriu,tartarugas_marinhas,0.82,0.47,OBIS: 66 ocorrencias na caixa da cidade
+balneario-camboriu,aves_marinhas,0.66,0.62,Fallback AquaMaps (OBIS=0 < 5 registros)
+itajai,zooplancton_copepodes,0.90,0.34,OBIS: 21 ocorrencias na caixa da cidade
+itajai,invertebrados_bentonicos,0.85,0.44,OBIS: 51 ocorrencias na caixa da cidade
+itajai,peixes_costeiros,0.70,0.84,OBIS: 1806 ocorrencias na caixa da cidade
+itajai,tartarugas_marinhas,0.82,0.47,OBIS: 66 ocorrencias na caixa da cidade
+itajai,aves_marinhas,0.66,0.62,Fallback AquaMaps (OBIS=0 < 5 registros)

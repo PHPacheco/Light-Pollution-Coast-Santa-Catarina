@@ -18,6 +18,7 @@ STEP_DIRS = {
     "habitat": OUTPUT_DIR / "03-habitat-and-bottom-light",
     "risk": OUTPUT_DIR / "04-ecological-risk-index",
     "comparison": OUTPUT_DIR / "05-comparisons",
+    "protected": OUTPUT_DIR / "06-protected-areas",
 }
 
 MAX_VIIRS = 60.0
@@ -64,16 +65,22 @@ CITIES = [
         "name": "Florianopolis",
         "slug": "florianopolis",
         "buffer_m": 27500,
+        "lat": -27.5954,
+        "lon": -48.5480,
     },
     {
         "name": "Balneario Camboriu",
         "slug": "balneario-camboriu",
         "buffer_m": 27500,
+        "lat": -26.9904,
+        "lon": -48.6345,
     },
     {
         "name": "Itajai",
         "slug": "itajai",
         "buffer_m": 27500,
+        "lat": -26.9081,
+        "lon": -48.6617,
     },
 ]
 
@@ -168,7 +175,17 @@ def buffer_classes(distances_px, pixel_m):
 
 
 def read_fauna_weights():
-    path = DATA_DIR / "fauna_sensitivity_weights.csv"
+    """Pesos medios de fauna por cidade.
+
+    Prioridade 3: prefere `obis_fauna_weights.csv` (derivado de ocorrencias reais
+    do OBIS, com fallback AquaMaps por grupo). Se ausente, usa o proxy original
+    `fauna_sensitivity_weights.csv` das Prioridades 1 e 2.
+    """
+    obis_path = DATA_DIR / "obis_fauna_weights.csv"
+    proxy_path = DATA_DIR / "fauna_sensitivity_weights.csv"
+    path = obis_path if obis_path.exists() else proxy_path
+    source = "obis" if path is obis_path else "proxy"
+
     weights = {}
     with path.open("r", encoding="utf-8", newline="") as file:
         for row in DictReader(file):
@@ -176,7 +193,8 @@ def read_fauna_weights():
             weights.setdefault(slug, []).append(
                 float(row["sensitivity_weight"]) * float(row["habitat_weight"])
             )
-    return {slug: float(np.mean(values)) for slug, values in weights.items()}
+    factors = {slug: float(np.mean(values)) for slug, values in weights.items()}
+    return factors, source
 
 
 def gradient(values, palette, mask=None):
@@ -375,6 +393,24 @@ def write_result_report(rows):
     return output
 
 
+def load_chlorophyll(city, mask):
+    """Array de clorofila normalizado [0,1] da Prioridade 3, ou None se ausente.
+
+    O arquivo e gerado por `fetch_chlorophyll_data.py`. Quando presente, substitui
+    o proxy de produtividade por distancia da costa; senao, o pipeline mantem o
+    calculo original.
+    """
+    path = DATA_DIR / "chlorophyll" / f"{city['slug']}_chlorophyll.npy"
+    if not path.exists():
+        return None
+    array = np.load(path)
+    if array.shape != mask.shape:
+        chl_image = Image.fromarray(array.astype(np.float32), mode="F")
+        chl_image = chl_image.resize((mask.shape[1], mask.shape[0]), Image.Resampling.BILINEAR)
+        array = np.asarray(chl_image, dtype=np.float32)
+    return np.clip(array, 0.0, 1.0)
+
+
 def analyze_city(city, fauna_factors):
     mask = water_mask(city)
     light = decode_light(city)
@@ -394,7 +430,14 @@ def analyze_city(city, fauna_factors):
     kd_proxy = np.where(mask, 0.35 + 0.55 * shallow_factor + 0.10 * (1.0 - light), 0.0)
     bottom_light = np.where(mask, light * np.exp(-1.65 * kd_proxy * depth_proxy), 0.0)
 
-    productivity_proxy = np.where(mask, 0.35 + 0.65 * shallow_factor, 0.0)
+    chlorophyll = load_chlorophyll(city, mask)
+    if chlorophyll is not None:
+        # Produtividade real (clorofila-a) substitui o proxy por distancia da costa.
+        productivity_proxy = np.where(mask, 0.30 + 0.70 * chlorophyll, 0.0)
+        productivity_source = "clorofila"
+    else:
+        productivity_proxy = np.where(mask, 0.35 + 0.65 * shallow_factor, 0.0)
+        productivity_source = "proxy-distancia"
     habitat = np.where(mask, 0.52 * shallow_factor + 0.30 * productivity_proxy + 0.18 * bottom_light, 0.0)
     habitat = np.clip(habitat, 0.0, 1.0)
 
@@ -413,6 +456,7 @@ def analyze_city(city, fauna_factors):
         "fauna": fauna,
         "raw_risk": raw_risk,
         "pixel_m": pixel_m,
+        "productivity_source": productivity_source,
     }
 
 
@@ -469,9 +513,75 @@ def save_city_outputs(result, risk):
     }
 
 
+def write_priority3_report(results, fauna_source, protected_info):
+    """Relatorio da Prioridade 3: fontes reais (OBIS, clorofila) e UCs por cidade."""
+    fauna_label = {
+        "obis": "OBIS (ocorrencias reais; fallback AquaMaps por grupo)",
+        "proxy": "proxy local (Prioridades 1 e 2; OBIS ainda nao importado)",
+    }.get(fauna_source, fauna_source)
+
+    lines = [
+        "# Prioridade 3 - Enriquecimento Ambiental e Defesa",
+        "",
+        "Relatorio gerado por `ecological_risk_analysis.py`. Documenta quais fontes",
+        "ambientais reais foram integradas e onde o risco coincide com unidades de",
+        "conservacao (CNUC/MMA).",
+        "",
+        "## Fonte de fauna marinha",
+        "",
+        f"- Pesos de fauna usados: **{fauna_label}**.",
+        "- Execute `python fetch_obis_data.py` para substituir o proxy por ocorrencias",
+        "  reais do OBIS (com fallback AquaMaps quando ha poucos registros locais).",
+        "",
+        "## Fonte de produtividade (area de alimentacao)",
+        "",
+        "| Cidade | Produtividade |",
+        "|---|---|",
+    ]
+    source_label = {
+        "clorofila": "clorofila-a real (ERDDAP/NASA)",
+        "proxy-distancia": "proxy por distancia da costa",
+    }
+    for result in results:
+        label = source_label.get(result["productivity_source"], result["productivity_source"])
+        lines.append(f"| {result['city']['name']} | {label} |")
+    lines.extend([
+        "",
+        "Execute `python fetch_chlorophyll_data.py` para baixar clorofila-a mensal",
+        "e substituir o proxy de produtividade por distancia da costa.",
+        "",
+        "## Unidades de conservacao por cidade",
+        "",
+        "Mapas em `EcologicalRiskImages/06-protected-areas/`. Lista de UCs cujo",
+        "poligono intersecta o recorte de cada cidade:",
+        "",
+        "| Cidade | Unidades de conservacao no buffer |",
+        "|---|---|",
+    ])
+    for result in results:
+        slug = result["city"]["slug"]
+        ucs = ", ".join(protected_info.get(slug, [])) or "nenhuma catalogada no buffer"
+        lines.append(f"| {result['city']['name']} | {ucs} |")
+    lines.extend([
+        "",
+        "### Observacoes",
+        "",
+        "- A REBIO Marinha do Arvoredo fica a ~50 km do centro de Florianopolis;",
+        "  pode cair fora do buffer de 27,5 km dependendo do recorte.",
+        "- A APA da Baleia Franca tem limite norte proximo de 28S, geralmente fora",
+        "  dos buffers das tres cidades analisadas.",
+        "- Os poligonos sao aproximacoes para visualizacao; para uso oficial,",
+        "  importar os limites vetoriais do CNUC/MMA.",
+        "",
+    ])
+    output = REPORTS_DIR / "relatorio_prioridade_3.md"
+    output.write_text("\n".join(lines), encoding="utf-8")
+    return output
+
+
 def main():
     ensure_dirs()
-    fauna_factors = read_fauna_weights()
+    fauna_factors, fauna_source = read_fauna_weights()
 
     results = [analyze_city(city, fauna_factors) for city in CITIES]
     max_risk = max(float(result["raw_risk"].max()) for result in results) or 1.0
@@ -482,6 +592,7 @@ def main():
         risk = np.where(result["mask"], np.clip(result["raw_risk"] / max_risk, 0.0, 1.0), 0.0)
         result["risk"] = risk
         images = save_city_outputs(result, risk)
+        result["risk_image"] = images["risk"]  # imagem crua p/ sobreposicao de UCs
         comparison_images.append((result["city"]["name"], images["risk"]))
         all_rows.extend(
             summarize_metrics(
@@ -504,8 +615,15 @@ def main():
         "Comparacao do indice ecologico relativo",
     )
 
+    # Prioridade 3: sobreposicao de unidades de conservacao (CNUC/MMA).
+    from protected_areas_overlay import generate_all_overlays
+
+    protected_info = generate_all_overlays(results)
+    priority3_path = write_priority3_report(results, fauna_source, protected_info)
+
     print(f"Saved metrics: {metrics_path}")
     print(f"Saved report: {report_path}")
+    print(f"Saved priority-3 report: {priority3_path}")
     print(f"Saved images: {OUTPUT_DIR}")
 
 
