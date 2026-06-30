@@ -29,14 +29,18 @@ poligono intersecta o recorte de cada cidade:
 | Cidade | Unidades de conservacao no buffer |
 |---|---|
 | Florianopolis | APA de Anhatomirim |
-| Balneario Camboriu | REBIO Marinha do Arvoredo |
-| Itajai | REBIO Marinha do Arvoredo |
+| Balneario Camboriu | nenhuma catalogada no buffer |
+| Itajai | nenhuma catalogada no buffer |
 
 ### Observacoes
 
-- A REBIO Marinha do Arvoredo fica a ~50 km do centro de Florianopolis;
-  pode cair fora do buffer de 27,5 km dependendo do recorte.
-- A APA da Baleia Franca tem limite norte proximo de 28S, geralmente fora
-  dos buffers das tres cidades analisadas.
+- A interseccao usa o recorte **circular** de 27,5 km (nao a imagem
+  quadrada), e exige cobertura minima do buffer para evitar que uma UC
+  apenas "roce" a borda seja mapeada.
+- A REBIO Marinha do Arvoredo tem centro a ~34 km (Balneario Camboriu) e
+  ~42 km (Itajai) dos centros urbanos: fica fora dos buffers circulares das
+  tres cidades, por isso nao e mapeada como interna.
+- A APA da Baleia Franca tem limite norte proximo de 28S, fora dos buffers
+  das tres cidades analisadas.
 - Os poligonos sao aproximacoes para visualizacao; para uso oficial,
   importar os limites vetoriais do CNUC/MMA.
