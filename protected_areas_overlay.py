@@ -66,6 +66,31 @@ PROTECTED_AREAS = [
             (-29.20, -47.80), (-29.20, -49.20),
         ],
     },
+    {
+        "name": "APA Costa Brava",
+        "code": "APA-COSTA-BRAVA",
+        "color": "#00e5ff",
+        # APA municipal de Balneario Camboriu (Lei 1985/2000): faixa costeira das
+        # Interpraias, de Ponta das Laranjeiras a Estaleirinho/Ponta do Malta,
+        # incluindo o mar adjacente. Praia do Estaleiro ~-27.03,-48.58.
+        "polygon": [
+            (-26.992, -48.605), (-27.022, -48.598), (-27.045, -48.595),
+            (-27.078, -48.593),
+            (-27.078, -48.562), (-27.045, -48.560), (-27.022, -48.563),
+            (-26.992, -48.576),
+        ],
+    },
+    {
+        "name": "Parque Natural Municipal do Atalaia",
+        "code": "PNM-ATALAIA",
+        "color": "#ff33cc",
+        # UC municipal de Itajai (Decreto, 2007), bairro Fazenda/Cabecudas, junto
+        # a foz do Itajai-Acu. Poligono aproximado (~19 ha na realidade).
+        "polygon": [
+            (-26.915, -48.650), (-26.915, -48.636),
+            (-26.932, -48.636), (-26.932, -48.650),
+        ],
+    },
 ]
 
 
@@ -101,10 +126,28 @@ def polygon_pixels(area, city, pixel_m, img_shape):
     ]
 
 
-# Fracao minima do buffer circular que uma UC precisa cobrir para ser mapeada.
-# Evita que uma UC apenas "roce" a borda do recorte (artefato de canto da imagem
-# quadrada) seja rotulada como dentro do buffer.
-MIN_OVERLAP_FRACTION = 0.01
+# Numero minimo de pixels de interseccao para uma UC ser desenhavel (evita
+# slivers de 1-2 pixels). O criterio principal de "dentro do buffer" e o
+# centroide da UC, nao a area: assim UCs pequenas mas internas (ex.: PNM Atalaia,
+# ~19 ha) entram, e UCs grandes mas externas que so roçam a borda (ex.: REBIO
+# Arvoredo) ficam de fora.
+MIN_OVERLAP_PX = 50
+
+
+def centroid_latlon(area):
+    """Centroide aproximado (media dos vertices) do poligono da UC."""
+    verts = area["polygon"]
+    lat = sum(v[0] for v in verts) / len(verts)
+    lon = sum(v[1] for v in verts) / len(verts)
+    return lat, lon
+
+
+def distance_m(lat1, lon1, lat2, lon2):
+    """Distancia equiretangular aproximada em metros entre dois pontos."""
+    m_per_deg_lon = EARTH_M_PER_DEG_LAT * math.cos(math.radians((lat1 + lat2) / 2.0))
+    dy = (lat1 - lat2) * EARTH_M_PER_DEG_LAT
+    dx = (lon1 - lon2) * m_per_deg_lon
+    return math.hypot(dx, dy)
 
 
 def polygon_to_mask(pixels, img_shape):
@@ -202,14 +245,15 @@ def generate_all_overlays(results):
         img_shape = result["mask"].shape
         pixel_m = result["pixel_m"]
         roi = circular_roi_mask(city, pixel_m, img_shape)
-        min_overlap = MIN_OVERLAP_FRACTION * float(roi.sum())
 
         intersecting = []
         for area in PROTECTED_AREAS:
             pixels = polygon_pixels(area, city, pixel_m, img_shape)
             mask = polygon_to_mask(pixels, img_shape)
-            overlap = float((mask & roi).sum())  # interseccao com o buffer circular
-            if overlap >= min_overlap:
+            overlap = int((mask & roi).sum())
+            clat, clon = centroid_latlon(area)
+            inside_buffer = distance_m(clat, clon, city["lat"], city["lon"]) <= city["buffer_m"]
+            if inside_buffer and overlap >= MIN_OVERLAP_PX:
                 intersecting.append((area, pixels))
 
         base = _risk_base_image(result)
