@@ -1,0 +1,4 @@
+city_slug,source,dataset,notes
+florianopolis,local_proxy,local-primary-productivity-proxy,"ERDDAP indisponivel; camada derivada da mascara de agua, proximidade da costa e suavizacao espacial"
+balneario-camboriu,local_proxy,local-primary-productivity-proxy,"ERDDAP indisponivel; camada derivada da mascara de agua, proximidade da costa e suavizacao espacial"
+itajai,local_proxy,local-primary-productivity-proxy,"ERDDAP indisponivel; camada derivada da mascara de agua, proximidade da costa e suavizacao espacial"

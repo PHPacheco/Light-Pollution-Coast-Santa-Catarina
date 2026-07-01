@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.codex_render*/
+tmp/
+~$*.docx
+~WRL*.tmp
+AGENTS.local.md
+.env

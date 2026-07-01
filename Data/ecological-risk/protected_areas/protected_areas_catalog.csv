@@ -1,0 +1,6 @@
+name,code,color,source,boundary_type,polygon_json
+APA de Anhatomirim,APA-ANHATOMIRIM,#00dd88,CNUC/MMA e descricao geografica publica; aproximado para visualizacao didatica,poligono aproximado local,"[[-27.48,-48.66],[-27.38,-48.60],[-27.30,-48.54],[-27.31,-48.47],[-27.43,-48.46],[-27.50,-48.56]]"
+REBIO Marinha do Arvoredo,REBIO-ARVOREDO,#ff4444,CNUC/MMA e descricao geografica publica; aproximado para visualizacao didatica,poligono aproximado local,"[[-27.108,-48.370],[-27.129,-48.313],[-27.180,-48.289],[-27.231,-48.313],[-27.252,-48.370],[-27.231,-48.427],[-27.180,-48.451],[-27.129,-48.427]]"
+APA da Baleia Franca,APA-BALEIA-FRANCA,#4488ff,CNUC/MMA e descricao geografica publica; aproximado para visualizacao didatica,poligono aproximado local,"[[-28.00,-49.20],[-28.00,-47.80],[-29.20,-47.80],[-29.20,-49.20]]"
+APA Costa Brava,APA-COSTA-BRAVA,#00e5ff,Prefeitura de Balneario Camboriu e cadastro ambiental; aproximado para visualizacao didatica,poligono aproximado local,"[[-26.992,-48.605],[-27.022,-48.598],[-27.045,-48.595],[-27.078,-48.593],[-27.078,-48.562],[-27.045,-48.560],[-27.022,-48.563],[-26.992,-48.576]]"
+Parque Natural Municipal do Atalaia,PNM-ATALAIA,#ff33cc,Prefeitura de Itajai e cadastro ambiental; aproximado para visualizacao didatica,poligono aproximado local,"[[-26.915,-48.650],[-26.915,-48.636],[-26.932,-48.636],[-26.932,-48.650]]"

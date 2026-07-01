@@ -1,0 +1,43 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{sbc-template}[2026/07/01 Minimal SBC-compatible template]
+
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{23.5cm}
+\setlength{\oddsidemargin}{0cm}
+\setlength{\evensidemargin}{0cm}
+\setlength{\topmargin}{-1cm}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+\setlength{\parindent}{1.0cm}
+\setlength{\parskip}{0pt}
+
+\makeatletter
+\newcommand{\address}[1]{\gdef\@address{#1}}
+\newcommand{\inst}[1]{\textsuperscript{#1}}
+\newcommand{\email}[1]{\texttt{#1}}
+\gdef\@address{}
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\Large\bfseries \@title \par}
+    \vspace{0.6cm}
+    {\normalsize \@author \par}
+    \vspace{0.25cm}
+    {\small \@address \par}
+  \end{center}
+  \vspace{0.4cm}
+}
+\makeatother
+
+\renewenvironment{abstract}{%
+  \begin{center}\bfseries Abstract\end{center}
+  \begin{quote}\small
+}{%
+  \end{quote}
+}
+
+\newenvironment{resumo}{%
+  \begin{center}\bfseries Resumo\end{center}
+  \begin{quote}\small
+}{%
+  \end{quote}
+}
